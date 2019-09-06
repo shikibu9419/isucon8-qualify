@@ -1,3 +1,4 @@
+require "#{Dir.home}/analyses.rb"
 require 'json'
 require 'sinatra/base'
 require 'erubi'
@@ -6,6 +7,8 @@ require 'mysql2-cs-bind'
 
 module Torb
   class Web < Sinatra::Base
+    include Analyses
+
     configure :development do
       require 'sinatra/reloader'
       register Sinatra::Reloader

@@ -75,6 +75,25 @@ module Torb
         events
       end
 
+      def get_events_sanitize(where = nil)
+        where ||= ->(e) { e['public_fg'] }
+
+        db.query('BEGIN')
+        begin
+          event_ids = db.query('SELECT * FROM events ORDER BY id ASC').select(&where).map { |e| e['id'] }
+          events = event_ids.map do |event_id|
+            event = get_event(event_id)
+            event['sheets'].each { |sheet| sheet.delete('detail') }
+            event
+          end
+          db.query('COMMIT')
+        rescue
+          db.query('ROLLBACK')
+        end
+
+        events
+      end
+
       def get_event(event_id, login_user_id = nil)
         event = db.xquery('SELECT * FROM events WHERE id = ?', event_id).first
         return unless event
